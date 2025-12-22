@@ -1,0 +1,27 @@
+{
+  "name": "csv-parser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "split": "node src/csv-split.ts",
+    "app": "node src/app.ts",
+    "parse": "npm run split && npm run app"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/multer": "^2.0.0",
+    "@types/node": "^25.0.3",
+    "csv-parser": "^3.2.0",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.6.0",
+    "multer": "^2.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
+  }
+}
