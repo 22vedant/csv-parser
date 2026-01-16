@@ -24,71 +24,73 @@ const inputDirectory = path.join(
 
 const BATCH_LIMIT = 500
 
-const processCsvFiles = (filePath: string, db) => {
-    return new Promise<void>((resolve, reject) => {
-        let batch = db.batch();
-        let batchCount = 0;
-        let totalWritten = 0;
+const processCsvFiles = (filePath: string, db: any) => {
+  return new Promise<void>((resolve, reject) => {
+    let batch = db.batch();
+    let batchCount = 0;
+    let totalWritten = 0;
 
-        const stream = fs.createReadStream(filePath)
-            .pipe(csv())
-            .on("data", async function (row) {
-                try {
-                    const docRef = db.collection("customers").doc();
+    const stream = fs
+      .createReadStream(filePath)
+      .pipe(csv())
+      .on("data", async function (row) {
+        try {
+          const docRef = db.collection("customers").doc();
 
-                    batch.set(docRef, row);
-                    batchCount++;
+          batch.set(docRef, row);
+          batchCount++;
 
-                    if (batchCount === BATCH_LIMIT) {
-                        stream.pause();
+          if (batchCount === BATCH_LIMIT) {
+            stream.pause();
 
-                        await batch.commit();
+            await batch.commit();
 
-                        totalWritten += batchCount;
-                        batch = db.batch();
-                        batchCount = 0;
+            totalWritten += batchCount;
+            batch = db.batch();
+            batchCount = 0;
 
-                        stream.resume();
-                    }
-                } catch (err) {
-                    stream.destroy();
-                    reject(err);
-                }
-            })
-            .on("end", async () => {
-                try {
-                    if (batchCount > 0) {
-                        await batch.commit();
-                        totalWritten += batchCount;
-                    }
-                    console.log(`✅ ${path.basename(filePath)} → ${totalWritten} docs`);
-                    resolve();
-                } catch (err) {
-                    reject(err);
-                }
-            })
-            .on("error", reject);
-    });
-}
+            stream.resume();
+          }
+        } catch (err) {
+          stream.destroy();
+          reject(err);
+        }
+      })
+      .on("end", async () => {
+        try {
+          if (batchCount > 0) {
+            await batch.commit();
+            totalWritten += batchCount;
+          }
+          console.log(`${path.basename(filePath)} → ${totalWritten} docs`);
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      })
+      .on("error", reject);
+  });
+};
 
 async function run() {
-    const files = fs.readdirSync(inputDirectory)
-        .filter(f => f.endsWith(".csv"))
-        .sort();
+  const files = fs
+    .readdirSync(inputDirectory)
+    .filter((f) => f.endsWith(".csv"))
+    .sort();
 
-    console.log(`Found ${files.length} CSV files`);
+  console.log(`Found ${files.length} CSV files`);
 
-    for (const file of files) {
-        console.log(`Processing ${file}`);
-        await processCsvFiles(path.join(inputDirectory, file), db);
-    }
+  for (const file of files) {
+    console.log(`Processing ${file}`);
+    await processCsvFiles(path.join(inputDirectory, file), db);
+  }
 
-    console.log(`All ${files.length} CSV files uploaded to Firestore`);
+  console.log(`All ${files.length} CSV files uploaded to Firestore`);
 }
 async function main() {
-    console.time("Start Time");
-    await run(); // wait for run to finish
-    console.timeEnd("End Time"); // ends the timer correctly
+  console.time("Time");
+  await run();
+  console.timeEnd("Time");
 }
 
 main();
